@@ -68,8 +68,8 @@ namespace Azure.DataApiBuilder.Service.Configurations
                 _fileSystem,
                 _logger);
 
-            runtimeConfig.DetermineGlobalSettings();
-            runtimeConfig.DetermineGraphQLEntityNames();
+            // runtimeConfig.DetermineGlobalSettings();
+            // runtimeConfig.DetermineGraphQLEntityNames();
 
             ValidateAuthenticationConfig();
 
