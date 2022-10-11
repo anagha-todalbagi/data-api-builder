@@ -68,6 +68,9 @@ namespace Azure.DataApiBuilder.Service.Configurations
                 _fileSystem,
                 _logger);
 
+            runtimeConfig.DetermineGlobalSettings();
+            runtimeConfig.DetermineGraphQLEntityNames();
+
             ValidateAuthenticationConfig();
 
             // Running these graphQL validations only in development mode to ensure

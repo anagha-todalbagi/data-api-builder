@@ -493,43 +493,43 @@ namespace Cli
         /// Reads the config and calls the method to validate 
         /// connection-string and database-type
         /// </summary>
-        public static bool CanStartEngineWithConfig(string configFile)
-        {
-            ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder.AddConsole();
-            });
+        // public static bool CanStartEngineWithConfig(string configFile)
+        // {
+        //     ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+        //     {
+        //         builder.AddConsole();
+        //     });
 
-            ILogger<RuntimeConfigValidator> logger = loggerFactory.CreateLogger<RuntimeConfigValidator>();
+        //     ILogger<RuntimeConfigValidator> logger = loggerFactory.CreateLogger<RuntimeConfigValidator>();
 
-            if (!TryReadRuntimeConfig(configFile, out string runtimeConfigJson))
-            {
-                return false;
-            }
+        //     if (!TryReadRuntimeConfig(configFile, out string runtimeConfigJson))
+        //     {
+        //         return false;
+        //     }
 
-            if (!RuntimeConfig.TryGetDeserializedConfig(runtimeConfigJson, out RuntimeConfig? runtimeConfig, logger))
-            {
-                return false;
-            }
+        //     if (!RuntimeConfig.TryGetDeserializedConfig(runtimeConfigJson, out RuntimeConfig? runtimeConfig, logger))
+        //     {
+        //         return false;
+        //     }
 
-            try
-            {
-                RuntimeConfigValidator._isDataSourceValidatedByCLI = false;
-                RuntimeConfigValidator.ValidateDataSourceInConfig(
-                    runtimeConfig!,
-                    new FileSystem(),
-                    logger);
+        //     try
+        //     {
+        //         RuntimeConfigValidator._isDataSourceValidatedByCLI = false;
+        //         RuntimeConfigValidator.ValidateDataSourceInConfig(
+        //             runtimeConfig!,
+        //             new FileSystem(),
+        //             logger);
 
-                RuntimeConfigValidator._isDataSourceValidatedByCLI = true;
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine(e.Message);
-                return false;
-            }
+        //         RuntimeConfigValidator._isDataSourceValidatedByCLI = true;
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         Console.Error.WriteLine(e.Message);
+        //         return false;
+        //     }
 
-            return true;
-        }
+        //     return true;
+        // }
 
         /// <summary>
         /// This method checks that parameter is only used with Stored Procedure, while

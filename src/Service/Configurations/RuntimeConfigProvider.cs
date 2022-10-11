@@ -224,8 +224,8 @@ namespace Azure.DataApiBuilder.Service.Configurations
                     ConfigProviderLogger!))
             {
                 RuntimeConfiguration = runtimeConfig;
-                RuntimeConfiguration!.DetermineGlobalSettings();
-                RuntimeConfiguration!.DetermineGraphQLEntityNames();
+                // RuntimeConfiguration!.DetermineGlobalSettings();
+                // RuntimeConfiguration!.DetermineGraphQLEntityNames();
                 RuntimeConfiguration!.ConnectionString = connectionString;
 
                 if (RuntimeConfiguration!.DatabaseType == DatabaseType.cosmos)
