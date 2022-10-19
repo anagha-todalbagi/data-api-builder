@@ -50,15 +50,24 @@ namespace Azure.DataApiBuilder.Service.GraphQLBuilder.Queries
                     Entity entity = entities[entityName];
 
                     ObjectTypeDefinitionNode returnType = GenerateReturnType(name);
-                    returnTypes.Add(returnType);
 
                     IEnumerable<string> rolesAllowedForRead = IAuthorizationResolver.GetRolesForOperation(entityName, operation: Operation.Read, entityPermissionsMap);
 
                     if (rolesAllowedForRead.Count() > 0)
                     {
-                        queryFields.Add(GenerateGetAllQuery(objectTypeDefinitionNode, name, returnType, inputTypes, entity, rolesAllowedForRead));
-                        queryFields.Add(GenerateByPKQuery(objectTypeDefinitionNode, name, databaseType, entity, rolesAllowedForRead));
+                        if(entity.ObjectType is SourceType.StoredProcedure)
+                        {
+                            returnType = GenerateReturnTypeForStoredProcedure(name);
+                            Console.WriteLine("stored-procedure 3");
+                            queryFields.Add(GenerateStoredProcedureQuery(objectTypeDefinitionNode, name, returnType, inputTypes, entity, rolesAllowedForRead));
+                        }
+                        else
+                        {
+                            queryFields.Add(GenerateGetAllQuery(objectTypeDefinitionNode, name, returnType, inputTypes, entity, rolesAllowedForRead));
+                            queryFields.Add(GenerateByPKQuery(objectTypeDefinitionNode, name, databaseType, entity, rolesAllowedForRead));
+                        }               
                     }
+                    returnTypes.Add(returnType);
                 }
             }
 
@@ -69,6 +78,44 @@ namespace Azure.DataApiBuilder.Service.GraphQLBuilder.Queries
             definitionNodes.AddRange(returnTypes);
             return new(definitionNodes);
         }
+
+        public static FieldDefinitionNode GenerateStoredProcedureQuery(
+            ObjectTypeDefinitionNode objectTypeDefinitionNode,
+            NameNode name,
+            ObjectTypeDefinitionNode returnType,
+            Dictionary<string, InputObjectTypeDefinitionNode> inputTypes,
+            Entity entity,
+            IEnumerable<string>? rolesAllowedForRead = null)
+        {
+            string ParameterInputTypeName = InputTypeBuilder.GenerateStoredProcedureInputParameterName(objectTypeDefinitionNode.Name.Value);
+
+            if (!inputTypes.ContainsKey(ParameterInputTypeName))
+            {
+                InputTypeBuilder.GenerateInputTypesForStoredProcedureObjectType(objectTypeDefinitionNode, inputTypes, entity.Parameters);
+            }
+
+            List<DirectiveNode> fieldDefinitionNodeDirectives = new();
+
+            if (CreateAuthorizationDirectiveIfNecessary(
+                    rolesAllowedForRead,
+                    out DirectiveNode? authorizeDirective))
+            {
+                fieldDefinitionNodeDirectives.Add(authorizeDirective!);
+            }
+
+            // Query field for the parent object type
+            // Generates a file like:
+            //    books(first: Int, after: String, filter: BooksFilterInput, orderBy: BooksOrderByInput): BooksConnection!
+            return new(
+                location: null,
+                new NameNode(name.Value),
+                new StringValueNode($"Execute Stored-Procedure {name.Value} and get results from the database"),
+                inputTypes[ParameterInputTypeName].Fields,
+                new NonNullTypeNode(new NamedTypeNode(returnType.Name)),
+                fieldDefinitionNodeDirectives
+            );
+        }
+
 
         public static FieldDefinitionNode GenerateByPKQuery(
             ObjectTypeDefinitionNode objectTypeDefinitionNode,
@@ -212,6 +259,26 @@ namespace Azure.DataApiBuilder.Service.GraphQLBuilder.Queries
             return objectType.Name.Value.EndsWith(PAGINATION_OBJECT_TYPE_SUFFIX);
         }
 
+        public static ObjectTypeDefinitionNode GenerateReturnTypeForStoredProcedure(NameNode name)
+        {
+            return new(
+                location: null,
+                new NameNode(GeneratePaginationTypeName(name.Value)),
+                new StringValueNode("The return value from stored-procedure"),
+                new List<DirectiveNode>(),
+                new List<NamedTypeNode>(),
+                new List<FieldDefinitionNode>{
+                    new FieldDefinitionNode(
+                        location: null,
+                        new NameNode("result"),
+                        new StringValueNode("The result of executing stored-procedure"),
+                        new List<InputValueDefinitionNode>(),
+                        new NonNullTypeNode(new ListTypeNode(new NonNullTypeNode(new NamedTypeNode("String")))),
+                        new List<DirectiveNode>())
+                }
+            );
+        }
+
         public static ObjectTypeDefinitionNode GenerateReturnType(NameNode name)
         {
             return new(
@@ -250,5 +317,6 @@ namespace Azure.DataApiBuilder.Service.GraphQLBuilder.Queries
         {
             return $"{name}{PAGINATION_OBJECT_TYPE_SUFFIX}";
         }
+    
     }
 }

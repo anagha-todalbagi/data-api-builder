@@ -2,7 +2,9 @@ using Azure.DataApiBuilder.Service.GraphQLBuilder.Directives;
 using Azure.DataApiBuilder.Service.GraphQLBuilder.GraphQLTypes;
 using HotChocolate.Language;
 using HotChocolate.Types;
+using System.Text.Json;
 using static Azure.DataApiBuilder.Service.GraphQLBuilder.GraphQLUtils;
+using static Azure.DataApiBuilder.Service.GraphQLBuilder.Sql.SchemaConverter;
 
 namespace Azure.DataApiBuilder.Service.GraphQLBuilder.Queries
 {
@@ -12,6 +14,42 @@ namespace Azure.DataApiBuilder.Service.GraphQLBuilder.Queries
         {
             GenerateOrderByInputTypeForObjectType(node, inputTypes);
             GenerateFilterInputTypeForObjectType(node, inputTypes);
+        }
+
+        public static void GenerateInputTypesForStoredProcedureObjectType(
+            ObjectTypeDefinitionNode node,
+            IDictionary<string, InputObjectTypeDefinitionNode> inputTypes,
+            IDictionary<string, object>? parameters)
+        {
+            List<InputValueDefinitionNode> inputFields = new();
+            if (parameters is not null)
+            {
+                foreach (string param in parameters.Keys)
+                {
+                    inputFields.Add(
+                        new(
+                            location: null,
+                            new (param),
+                            new StringValueNode($"parameters for {node.Name} stored-procedure"),
+                            new NamedTypeNode("String"),
+                            defaultValue: new StringValueNode($"{parameters[param]}"),
+                            new List<DirectiveNode>())
+                        );
+                }
+            }
+
+            string inputTypeName = GenerateStoredProcedureInputParameterName(node.Name.Value);
+            string inputTypeDescription = $"StoredProcedure {node.Name} for GraphQL type";
+            inputTypes.Add(
+                inputTypeName,
+                new(
+                    location: null,
+                    new NameNode(inputTypeName),
+                    new StringValueNode(inputTypeDescription),
+                    new List<DirectiveNode>(),
+                    inputFields
+                )
+            );
         }
 
         public static void GenerateFilterInputTypeForObjectType(
@@ -171,6 +209,11 @@ namespace Azure.DataApiBuilder.Service.GraphQLBuilder.Queries
         public static string GenerateObjectInputFilterName(string name)
         {
             return $"{name}FilterInput";
+        }
+
+        public static string GenerateStoredProcedureInputParameterName(string name)
+        {
+            return $"{name}ParameterInput";
         }
     }
 }

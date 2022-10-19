@@ -170,7 +170,9 @@ namespace Azure.DataApiBuilder.Service.Configurations
 
             foreach ((string entityName, Entity entity) in entityCollection)
             {
-                if (entity.GraphQL is null
+                entity.TryPopulateSourceFields();
+                if (entity.ObjectType is SourceType.StoredProcedure ||
+                    entity.GraphQL is null
                     || (entity.GraphQL is bool graphQLEnabled && !graphQLEnabled))
                 {
                     continue;
@@ -206,6 +208,7 @@ namespace Azure.DataApiBuilder.Service.Configurations
             foreach (string entityName in entityCollection.Keys)
             {
                 Entity entity = entityCollection[entityName];
+                entity.TryPopulateSourceFields();
 
                 if (entity.GraphQL is null)
                 {

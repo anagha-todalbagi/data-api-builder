@@ -142,16 +142,7 @@ namespace Azure.DataApiBuilder.Service.Services
                     subStatusCode: DataApiBuilderException.SubStatusCodes.EntityNotFound);
             }
 
-            switch (databaseObject!.SourceType)
-            {
-                case SourceType.Table:
-                    return ((DatabaseTable)databaseObject).TableDefinition;
-                case SourceType.View:
-                    return ((DatabaseView)databaseObject).ViewDefinition;
-                default:
-                    // For stored procedures
-                    return null!;
-            }
+            return SourceDefinition.GetSourceDefinitionForDatabaseObject(databaseObject);
         }
 
         /// <inheritdoc />
