@@ -32,3 +32,18 @@ With Data API builder, database objects can be exposed via REST or GraphQL endpo
 - [Known Issues and Limitations](/azure/data-api-builder/known-issues)
 - [Troubleshooting](/azure/data-api-builder/troubleshoot)
 - [Security Considerations](/azure/data-api-builder/security-considerations)
+
+## Steps to contribute to documentation
+
+Terms used:
+Main branch is staging and publishes to review.learn.microsoft.com.  
+Live branch is production that publishes to learn.microsoft.com.
+
+Steps:
+
+1. Navigate to [learn docs on Github](https://github.com/MicrosoftDocs/data-api-builder-docs-pr)
+2. Clone the above repository
+3. Create a PR with your updates to the documentation
+4. When you are ready to merge your PR and begin the review process, add a comment #sign-off (the docs team will take care of reviewing the PR and merging it to the ‘main’ branch)
+5. After your PR has been merged to the main branch, send an email to atodalbagi@microsoft.com to merge it to the live branch (this will be automated in the future)
+6. The updated content will be published [here](https://learn.microsoft.com/azure/data-api-builder/) instantly or within a day.
